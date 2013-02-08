@@ -5,19 +5,20 @@
 # guelfoweb@gmail.com wrote this file. As long as you retain this notice you
 # can do whatever you want with this stuff. If we meet some day, and you think
 # this stuff is worth it, you can buy me a beer in return Gianni 'guelfoweb' Amato
+# Improved by slacknux
 # ----------------------------------------------------------------------------
 
 import sys, os
 
 def help(code):
-	if code == 1:
+	if code:
 		print "File not found:", ifile
-		exit()
+		sys.exit()
 	print "mir v1.0 - Reverses the bytes of a file"
 	print "Author: Gianni 'guelfoweb' Amato"
 	print "\nUSAGE:"
 	print "\tmir [FROM FILE] [TO FILE]"
-	exit()
+	sys.exit()
 
 # Arguments
 if len(sys.argv) != 3:
@@ -27,19 +28,25 @@ ifile  = sys.argv[1]
 ofile = sys.argv[2]
 
 # File not exist
-if os.path.isfile(ifile) == False:
+if not os.path.isfile(ifile):
 	help(1)
 	
 fs = os.stat(ifile).st_size 
-print "Mirroring", fs, "bytes..."
+sz = 8192
 
-m = open(ofile, 'w+b')
-f = open(ifile, 'rb')
-for i in range(fs+1):
-	f.seek(fs - i)
-	byte = f.read(1)
-	# print byte
-	m.write(byte)
-print "Ok"
-f.close()
-m.close()
+print "Reversing", fs, "bytes..."
+
+i = open(ifile, 'rb')
+o = open(ofile, 'w+b')
+
+while fs:
+	fs -= sz
+	if fs < 0:
+		sz += fs
+		fs = 0
+	i.seek(fs)
+	o.write(i.read(sz)[::-1])
+
+o.close()
+i.close()
+print "\033[1A\033[0KDone!"
